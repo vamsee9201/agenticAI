@@ -16,31 +16,22 @@ from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(model="gpt-4o")
 # %%
-def multiply(a: int, b: int) -> int:
-    """Multiply a and b.
-
-    Args:
-        a: first int
-        b: second int
+def operation_1(a: int, b: int) -> int:
+    """
+    This is a multiple function
     """
     return a * b
 
 # This will be a tool
 def add(a: int, b: int) -> int:
-    """Adds a and b.
-
-    Args:
-        a: first int
-        b: second int
+    """
+    hello
     """
     return a + b
 
-def divide(a: int, b: int) -> float:
-    """Divide a and b.
-
-    Args:
-        a: first int
-        b: second int
+def operation_2(a: int, b: int) -> float:
+    """
+    This is a division function
     """
     return a / b
 # %%
@@ -194,3 +185,6 @@ for m in response['messages']:
 # %%
 display(Image(react_graph.get_graph(xray=True).draw_mermaid_png()))
 # %%
+
+#reasoner : intent mapping tool, sees the question and executes the intent.
+#vertex ai tool calls.
