@@ -86,14 +86,18 @@ app = workflow.compile(checkpointer=memory)
 
 display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
+print(type(app))
+
+#%%
 from langchain_core.messages import HumanMessage
 
 config = {"configurable": {"thread_id": "2"}}
 input_message = HumanMessage(content="hi! I'm bob")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
-    event["messages"][-1].pretty_print()
+    event["messages"][-1].pretty_print() 
 #%%
 
 input_message = HumanMessage(content="what's my name?")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
+# %%
