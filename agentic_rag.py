@@ -84,3 +84,34 @@ def retriever_tool():
 
 
     return ""
+#%%
+from langgraph.graph import END, StateGraph, START
+from langgraph.prebuilt import ToolNode
+#%%
+workflow = StateGraph(AgentState)
+workflow.add_node("agent", agent)  # agent
+workflow.add_edge(START, "agent")
+workflow.add_edge("agent", END)
+# %%
+graph = workflow.compile()
+from IPython.display import Image, display
+
+try:
+    display(Image(graph.get_graph(xray=True).draw_mermaid_png()))
+except Exception:
+    # This requires some extra dependencies and is optional
+    pass
+# %%
+import pprint
+
+inputs = {
+    "messages": [
+        ("user", "What does Lilian Weng say about the types of agent memory?"),
+    ]
+}
+for output in graph.stream(inputs):
+    for key, value in output.items():
+        pprint.pprint(f"Output from node '{key}':")
+        pprint.pprint("---")
+        pprint.pprint(value, indent=2, width=80, depth=None)
+    pprint.pprint("\n---\n")
