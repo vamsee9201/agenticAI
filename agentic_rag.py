@@ -69,6 +69,10 @@ from pydantic import BaseModel, Field
 from langgraph.prebuilt import tools_condition
 #%%
 def generate():
+    print("--GENERATE--")
+    messages = state["messages"]
+    question = messages[0].content
+    last_message = messages[-1]
 
     return ""
 
@@ -84,14 +88,44 @@ def retriever_tool():
 
 
     return ""
+
+def generate(state):
+    print("---GENERATE---")
+    messages = state["messages"]
+    question = messages[0].content
+    last_message = messages[-1]
+    docs = last_message.content
+    prompt = hub.pull("rlm/rag-prompt")
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0, streaming=True)
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+    rag_chain = prompt | llm | StrOutputParser()
+    response = rag_chain.invoke({"context": docs, "question": question})
+    return {"messages": [response]}
+
+#%%
+from langchain.tools.retriever import create_retriever_tool
+
+retriever_tool = create_retriever_tool(
+    retriever,
+    "retrieve_blog_posts",
+    "Search and return information about Lilian Weng blog posts on LLM agents, prompt engineering, and adversarial attacks on LLMs.",
+)
+
 #%%
 from langgraph.graph import END, StateGraph, START
 from langgraph.prebuilt import ToolNode
 #%%
 workflow = StateGraph(AgentState)
 workflow.add_node("agent", agent)  # agent
+retrieve = ToolNode([retriever_tool])
+workflow.add_node("retrieve", retrieve)
+workflow.add_node("generate", generate)
+
 workflow.add_edge(START, "agent")
-workflow.add_edge("agent", END)
+workflow.add_edge("agent", "retrieve")
+workflow.add_edge("retrieve","generate")
+workflow.add_edge("generate",END)
 # %%
 graph = workflow.compile()
 from IPython.display import Image, display
@@ -115,3 +149,6 @@ for output in graph.stream(inputs):
         pprint.pprint("---")
         pprint.pprint(value, indent=2, width=80, depth=None)
     pprint.pprint("\n---\n")
+# %%
+
+#next step is to add another node (retrieve node) and see what is happening.
