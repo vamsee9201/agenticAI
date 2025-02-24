@@ -68,17 +68,10 @@ from pydantic import BaseModel, Field
 
 from langgraph.prebuilt import tools_condition
 #%%
-def generate():
-    print("--GENERATE--")
-    messages = state["messages"]
-    question = messages[0].content
-    last_message = messages[-1]
-
-    return ""
-
 def agent(state):
     messages = state["messages"]
-    model = ChatOpenAI(temperature=0, streaming=True, model="gpt-4-turbo")
+    print("full messages",messages)
+    model = ChatOpenAI(temperature=0, streaming=True, model="gpt-4o-mini")
     model = model.bind_tools(tools)
     response = model.invoke(messages)
     return {"messages": [response]}
@@ -92,6 +85,7 @@ def retriever_tool():
 def generate(state):
     print("---GENERATE---")
     messages = state["messages"]
+    print("full messages :",messages)
     question = messages[0].content
     last_message = messages[-1]
     docs = last_message.content
@@ -122,12 +116,30 @@ retrieve = ToolNode([retriever_tool])
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)
 
+
+
 workflow.add_edge(START, "agent")
-workflow.add_edge("agent", "retrieve")
+#workflow.add_edge("agent", "retrieve")
+workflow.add_conditional_edges(
+    "agent",
+    # Assess agent decision
+    tools_condition,
+    {
+        # Translate the condition outputs to nodes in our graph
+        "tools": "retrieve",
+        END: END,
+    },
+)
 workflow.add_edge("retrieve","generate")
 workflow.add_edge("generate",END)
 # %%
-graph = workflow.compile()
+from langgraph.checkpoint.memory import MemorySaver
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory)
+
+
+
+#%%
 from IPython.display import Image, display
 
 try:
@@ -138,9 +150,10 @@ except Exception:
 # %%
 import pprint
 
+#What does Lilian Weng say about the types of agent memory??
 inputs = {
     "messages": [
-        ("user", "What does Lilian Weng say about the types of agent memory?"),
+        ("user", "What does Lilian Weng say about the types of agent memory??"),
     ]
 }
 for output in graph.stream(inputs):
@@ -152,3 +165,17 @@ for output in graph.stream(inputs):
 # %%
 
 #next step is to add another node (retrieve node) and see what is happening.
+
+from langchain_core.messages import HumanMessage
+
+config = {"configurable": {"thread_id": "1"}}
+input_message = HumanMessage(content="who is lilian weng?")
+for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
+    event["messages"][-1].pretty_print()
+
+
+input_message = HumanMessage(content="what did she say about agent memory?")
+for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
+    event["messages"][-1].pretty_print()
+
+# %%
