@@ -84,13 +84,12 @@ def rewrite_question(state):
             prefix = "AI"
         temp_convo = f"""{prefix} : {conversation.content}\n"""
         conversation_string+=temp_convo
-    
-        
-
-
-    
-
-    return {"messages":""}
+    prompt = f"""
+    Using this conversation history and the latest human question. use the context to rewrite the human question to capture meaning.
+    conversation history : {conversation_string}
+    """
+    response = model.invoke(prompt)
+#%%
 
 def agent(state):
     messages = state["messages"]
