@@ -68,17 +68,24 @@ from pydantic import BaseModel, Field
 
 from langgraph.prebuilt import tools_condition
 #%%
-
+from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage
 def rewrite_question(state):
     """
     To maintain a conversation , this tool takes the latest question and conversation history and rewrites the question.
     """
     messages = state["messages"]
-    conversations = [message for message in messages if (isinstance(input_message, HumanMessage) or isinstance(input_message, AIMessage))]
+    print(messages)
+    conversations = []
+    for message in messages:
+        print("first message",message)
+        if isinstance(message, HumanMessage) or isinstance(message,AIMessage):
+            conversations.append(message)
+    print("conversations",conversations)
     conversation_string = ""
     for conversation in conversations:
         prefix = ""
-        if isinstance(input_message, HumanMessage):
+        if isinstance(conversation, HumanMessage):
             prefix = "Human"
         else :
             prefix = "AI"
@@ -88,7 +95,14 @@ def rewrite_question(state):
     Using this conversation history and the latest human question. use the context to rewrite the human question to capture meaning.
     conversation history : {conversation_string}
     """
-    response = model.invoke(prompt)
+    print("prompt",prompt)
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0, streaming=True)
+    response = llm.invoke(prompt)
+    #print(conversation_string)
+    return {"messages":response.content}
+#%%
+sample_state = {"messages":[HumanMessage(content='who is lilian weng?', additional_kwargs={}, response_metadata={}, id='0c4e624d-4422-4b7d-b925-ad76d65f1471'), AIMessage(content='Lilian Weng is a researcher and writer known for her work in the field of artificial intelligence, particularly in areas related to large language models (LLMs), prompt engineering, and adversarial attacks on LLMs. She maintains a blog where she shares insights, research findings, and discussions on these topics, contributing to the understanding and development of AI technologies. Her work is influential in the AI community, especially among those interested in the practical applications and implications of LLMs.', additional_kwargs={}, response_metadata={'finish_reason': 'stop', 'model_name': 'gpt-4o-mini-2024-07-18', 'system_fingerprint': 'fp_709714d124'}, id='run-910551a8-fd3d-423c-a8cb-71b0c829b1c5-0'), HumanMessage(content='what did she say about agent memory?', additional_kwargs={}, response_metadata={}, id='dfcc8400-9a7e-4101-be82-06b8dd6f3256')]}
+rewrite_question(sample_state)
 #%%
 
 def agent(state):
