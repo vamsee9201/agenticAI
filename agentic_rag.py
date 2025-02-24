@@ -73,6 +73,22 @@ def rewrite_question(state):
     """
     To maintain a conversation , this tool takes the latest question and conversation history and rewrites the question.
     """
+    messages = state["messages"]
+    conversations = [message for message in messages if (isinstance(input_message, HumanMessage) or isinstance(input_message, AIMessage))]
+    conversation_string = ""
+    for conversation in conversations:
+        prefix = ""
+        if isinstance(input_message, HumanMessage):
+            prefix = "Human"
+        else :
+            prefix = "AI"
+        temp_convo = f"""{prefix} : {conversation.content}\n"""
+        conversation_string+=temp_convo
+    
+        
+
+
+    
 
     return {"messages":""}
 
@@ -97,6 +113,7 @@ def generate(state):
     print("This is generate node")
     print("full messages :",messages)
     question = messages[0].content
+    print("question:",question)
     last_message = messages[-1]
     docs = last_message.content
     prompt = hub.pull("rlm/rag-prompt")
@@ -189,5 +206,11 @@ for event in graph.stream({"messages": [input_message]}, config, stream_mode="va
     event["messages"][-1].pretty_print()
 
 # %%
-type(input_message)
+from langchain_core.messages import HumanMessage
+if isinstance(input_message, HumanMessage):
+    print("input_message is an instance of HumanMessage")
+else:
+    print("input_message is NOT an instance of HumanMessage")
+#%%
+print(input_message is HumanMessage)
 # %%
