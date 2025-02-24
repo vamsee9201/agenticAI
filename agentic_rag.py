@@ -68,8 +68,17 @@ from pydantic import BaseModel, Field
 
 from langgraph.prebuilt import tools_condition
 #%%
+
+def rewrite_question(state):
+    """
+    To maintain a conversation , this tool takes the latest question and conversation history and rewrites the question.
+    """
+
+    return {"messages":""}
+
 def agent(state):
     messages = state["messages"]
+    print("This is agent node")
     print("full messages",messages)
     model = ChatOpenAI(temperature=0, streaming=True, model="gpt-4o-mini")
     model = model.bind_tools(tools)
@@ -85,6 +94,7 @@ def retriever_tool():
 def generate(state):
     print("---GENERATE---")
     messages = state["messages"]
+    print("This is generate node")
     print("full messages :",messages)
     question = messages[0].content
     last_message = messages[-1]
@@ -173,9 +183,11 @@ input_message = HumanMessage(content="who is lilian weng?")
 for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 
-
+#%%
 input_message = HumanMessage(content="what did she say about agent memory?")
 for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 
+# %%
+type(input_message)
 # %%
