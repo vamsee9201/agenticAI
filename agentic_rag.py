@@ -208,8 +208,8 @@ for output in graph.stream(inputs):
 
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "1"}}
-input_message = HumanMessage(content="who is lilian weng?")
+config = {"configurable": {"thread_id": "4"}}
+input_message = HumanMessage(content="What does Lilian Weng say about the types of agent memory?")
 for event in graph.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 
