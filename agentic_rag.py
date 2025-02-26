@@ -53,7 +53,6 @@ class AgentState(TypedDict):
     # The add_messages function defines how an update should be processed
     # Default is to replace. add_messages says "append"
     messages: Annotated[Sequence[BaseMessage], add_messages]
-    conversations: Annotated[list[HumanMessage | AIMessage], add_messages]
 #%%
 from typing import Annotated, Literal, Sequence
 from typing_extensions import TypedDict
@@ -73,7 +72,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.messages import AIMessage
 def rewrite_question(state):
     """
-    To maintain a conversation , this tool takes the latest question and conversation history and rewrites the question.
+    To maintain a conversation , If there is a conversation history this tool takes the latest question and conversation history and rewrites the question.
     """
     messages = state["messages"]
     print(messages)
@@ -153,6 +152,7 @@ from langgraph.prebuilt import ToolNode
 #%%
 workflow = StateGraph(AgentState)
 workflow.add_node("agent", agent)  # agent
+workflow.add_node("rewrite",rewrite_question) # testing rewrite question
 retrieve = ToolNode([retriever_tool])
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)
@@ -161,6 +161,7 @@ workflow.add_node("generate", generate)
 
 workflow.add_edge(START, "agent")
 #workflow.add_edge("agent", "retrieve")
+workflow.add_conditional_edges("agent",)
 workflow.add_conditional_edges(
     "agent",
     # Assess agent decision
