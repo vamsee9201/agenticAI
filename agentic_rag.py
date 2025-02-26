@@ -53,6 +53,7 @@ class AgentState(TypedDict):
     # The add_messages function defines how an update should be processed
     # Default is to replace. add_messages says "append"
     messages: Annotated[Sequence[BaseMessage], add_messages]
+    conversations: Annotated[list[HumanMessage | AIMessage], add_messages]
 #%%
 from typing import Annotated, Literal, Sequence
 from typing_extensions import TypedDict
@@ -175,7 +176,7 @@ workflow.add_edge("generate",END)
 # %%
 from langgraph.checkpoint.memory import MemorySaver
 memory = MemorySaver()
-graph = workflow.compile(checkpointer=memory)
+graph = workflow.compile()
 
 
 
