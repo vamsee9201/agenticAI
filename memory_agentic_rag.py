@@ -174,5 +174,12 @@ app.get_state(config=config)
 
 # %%
 
+input_message = HumanMessage(content="what did she say about adversarial attacks?")
+for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
+    event["messages"][-1].pretty_print()
+app.get_state(config=config)
+
 #testing commits
 #Now i have to add a tool to the model that can retrieve from a vector database. 
+
+# %%
