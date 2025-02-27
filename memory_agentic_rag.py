@@ -34,12 +34,21 @@ class AgentState(TypedDict):
 
 
 def update_user_question(state):
-    prompt = """
-    Using this conversation history and the latest human question. use the context to rewrite the human question to capture meaning.     
+    #print(str(state["messages"]))
+    conversation_history = "\n".join(
+        f"{'Human:' if isinstance(message, HumanMessage) else 'AI:'} {message.content}" 
+        for message in state["messages"]
+    )
+    print("conversation history :",conversation_history + "end of conversation history")
+    prompt = f"""
+    Rewrite the latest human question to be fully self-contained while preserving its meaning. 
+    If it refers to context from the conversation, replace pronouns or vague terms with the correct reference. 
+    If it is already clear, keep it unchanged. Do not add explanations or modify intent.      
     Conversation history: 
-    """ + "\n" + str(state["messages"]) 
+    {conversation_history}
+    """
     response = model.invoke(prompt)
-    return {"user_question":response}
+    return {"user_question":response.content}
 
 #tools = [update_user_question]
 
@@ -72,13 +81,13 @@ display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "7"}}
-input_message = HumanMessage(content="hi! I'm bob")
+config = {"configurable": {"thread_id": "16"}}
+input_message = HumanMessage(content="who is ellyse perry")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 #%%
 
-input_message = HumanMessage(content="what's my name?")
+input_message = HumanMessage(content="how old is she?")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
 
