@@ -3,6 +3,7 @@
 import json
 import os 
 from langchain_openai import ChatOpenAI
+import mysql.connector  # Added import for MySQL connector
 
 #%%
 # Open and read the JSON file
@@ -10,21 +11,38 @@ with open('openai_key.json', 'r') as file:
     data = json.load(file)  # Load JSON data as a Python dictionary
 #set open_ai key as an environment variable
 os.environ['OPENAI_API_KEY'] = data["api_key"]
+
+# Open and read the JSON file for SQL password
+with open('sql_password.json', 'r') as file:  # Added code to read SQL password
+    sql_data = json.load(file)  # Load SQL JSON data as a Python dictionary
+
 #%%
 llm = ChatOpenAI(model="gpt-4o")
+
+cnx = mysql.connector.connect(user='root', password=sql_data["sql_password"],  # Added SQL connection
+                              host='127.0.0.1',
+                              database='HRDB')
+cursor = cnx.cursor()
 #%%
 
 #tool
-def get_employee_data():
+def get_employee_email(name:str):
     """
     This tool is used to get the employee data. 
     """
-    return {"messages":"john doe's age is 23"}
+    normalized_name = name.lower()
+    query = f"SELECT employee_email FROM employees WHERE LOWER(employee_name) = '{normalized_name}'"
+    cursor.execute(query)
+    result = cursor.fetchone()
+    if result:
+        return {"messages": result[0]}
+    else:   
+        return {"messages": "Employee not found"}
 
 #%%
 
 #llm with tools
-tools = [get_employee_data]
+tools = [get_employee_email]
 llm_with_tools = llm.bind_tools(tools)
 
 
@@ -65,7 +83,7 @@ react_graph = builder.compile()
 display(Image(react_graph.get_graph(xray=True).draw_mermaid_png()))
 #%%
 
-messages = [HumanMessage(content="what is john doe's age")]
+messages = [HumanMessage(content="what is john doe's email")]
 messages = react_graph.invoke({"messages": messages})
 for m in messages['messages']:
     m.pretty_print()
@@ -100,4 +118,7 @@ def request_leave():
 def employee_count():
 
     return ""
+
+#%%
+
 
