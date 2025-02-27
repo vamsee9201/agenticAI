@@ -31,6 +31,19 @@ class AgentState(TypedDict):
     user_question:str
 
 #%%
+
+
+def update_user_question(state):
+    prompt = """
+    Using this conversation history and the latest human question. use the context to rewrite the human question to capture meaning.     
+    Conversation history: 
+    """ + "\n" + str(state["messages"]) 
+    response = model.invoke(prompt)
+    return {"user_question":response}
+
+#tools = [update_user_question]
+
+#model_tools = model.bind_functions(tools)
 def call_model(state):
     print("full messages",state["messages"])
     try:
@@ -39,14 +52,11 @@ def call_model(state):
         pass
     response = model.invoke(state["messages"])
     return {"messages":response}
-
-def update_user_question(state):
-    return {"user_question":"test question"}
     
 
 
 #%%
-
+from langgraph.prebuilt import tools_condition
 workflow = StateGraph(AgentState)
 
 workflow.add_node("call_model",call_model)
@@ -62,7 +72,7 @@ display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "5"}}
+config = {"configurable": {"thread_id": "7"}}
 input_message = HumanMessage(content="hi! I'm bob")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
