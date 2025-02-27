@@ -155,7 +155,7 @@ from langgraph.prebuilt import ToolNode
 #%%
 workflow = StateGraph(AgentState)
 workflow.add_node("agent", agent)  # agent
-workflow.add_node("rewrite",rewrite_question) # testing rewrite question
+#workflow.add_node("rewrite",rewrite_question) # testing rewrite question
 retrieve = ToolNode([retriever_tool])
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)
@@ -164,7 +164,7 @@ workflow.add_node("generate", generate)
 
 workflow.add_edge(START, "agent")
 #workflow.add_edge("agent", "retrieve")
-workflow.add_conditional_edges("agent",)
+#workflow.add_conditional_edges("agent",)
 workflow.add_conditional_edges(
     "agent",
     # Assess agent decision

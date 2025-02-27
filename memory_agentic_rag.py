@@ -65,6 +65,7 @@ class AgentState(TypedDict):
 from langchain.tools.retriever import create_retriever_tool
 from langchain_core.output_parsers import StrOutputParser
 from langchain import hub
+from langchain_core.messages import AIMessage
 
 """
 retriever_tool = create_retriever_tool(
@@ -99,7 +100,7 @@ def generate(state):
     rag_chain = prompt | llm | StrOutputParser()
     response = rag_chain.invoke({"context": docs, "question": question})
     print("response:",response)
-    return {"messages": [response]}
+    return {"messages": [AIMessage(content=response)]}
 
 
 
@@ -161,7 +162,7 @@ display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "2"}}
+config = {"configurable": {"thread_id": "3"}}
 input_message = HumanMessage(content="who is lilian weng")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
@@ -181,5 +182,3 @@ app.get_state(config=config)
 
 #testing commits
 #Now i have to add a tool to the model that can retrieve from a vector database. 
-
-# %%
