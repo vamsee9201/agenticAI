@@ -81,7 +81,7 @@ display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "16"}}
+config = {"configurable": {"thread_id": "17"}}
 input_message = HumanMessage(content="who is ellyse perry")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
@@ -90,6 +90,7 @@ for event in app.stream({"messages": [input_message]}, config, stream_mode="valu
 input_message = HumanMessage(content="how old is she?")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
+app.get_state(config=config)
 
 # %%
 
