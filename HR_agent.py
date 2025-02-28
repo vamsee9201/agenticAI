@@ -40,9 +40,24 @@ def get_employee_email(name:str):
         return {"messages": "Employee not found"}
 
 #%%
+def generate_sql_query(query:str):
+    """
+    This tool is used to generate a sql query for employee data.
+    employee data is stored in the employees_data table.
+    the table has the following columns: employee_id, employee_name, employee_email, employee_phone, employee_address, employee_city, employee_state, employee_zip, employee_country, employee_department, employee_job_title, employee_salary, employee_hire_date, employee_termination_date
+    """
+    print("This is get sql query tool")
+    response = llm.invoke("Generate a sql query to update employee data based on the following question: " + query + "\n" + "You are an AI that generates SQL queries from natural language questions. Your task is to take a given question and generate only the SQL query, with no explanations, comments, or additional text. The output should be a valid SQL statement formatted properly. Do not include any preamble or extra words—just the SQL query itself.")
+    print(response.content)
+    return {"messages": response.content}
+
+generate_sql_query("change johnn doe's email to johndoe2@gmail.com")
+#%%
+#%%
 
 #llm with tools
-tools = [get_employee_email]
+#tools = [get_employee_email]
+tools = [generate_sql_query]
 llm_with_tools = llm.bind_tools(tools)
 
 
@@ -83,7 +98,7 @@ react_graph = builder.compile()
 display(Image(react_graph.get_graph(xray=True).draw_mermaid_png()))
 #%%
 
-messages = [HumanMessage(content="what is john doe's email")]
+messages = [HumanMessage(content="change jogn does email to johndoe2@gmail.com")]
 messages = react_graph.invoke({"messages": messages})
 for m in messages['messages']:
     m.pretty_print()
@@ -121,4 +136,7 @@ def employee_count():
 
 #%%
 
+
+#agent needs to know where the data is. 
+#we should have scripts to do everything : get description, function to add the description to the tool. 
 
