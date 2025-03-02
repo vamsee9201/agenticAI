@@ -162,7 +162,7 @@ display(Image(app.get_graph(xray=True).draw_mermaid_png()))
 # %%
 from langchain_core.messages import HumanMessage
 
-config = {"configurable": {"thread_id": "3"}}
+config = {"configurable": {"thread_id": "1"}}
 input_message = HumanMessage(content="who is lilian weng")
 for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
     event["messages"][-1].pretty_print()
@@ -182,5 +182,11 @@ app.get_state(config=config)
 
 #testing commits
 #Now i have to add a tool to the model that can retrieve from a vector database. 
+
+# %%
+input_message = HumanMessage(content="Thank you")
+for event in app.stream({"messages": [input_message]}, config, stream_mode="values"):
+    event["messages"][-1].pretty_print()
+app.get_state(config=config)
 
 # %%
