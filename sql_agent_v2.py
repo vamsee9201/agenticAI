@@ -66,3 +66,46 @@ def execute_query(state: State):
     """Execute SQL query."""
     execute_query_tool = QuerySQLDatabaseTool(db=db)
     return {"result": execute_query_tool.invoke(state["query"])}
+# %%
+execute_query({"query": "SELECT COUNT(EmployeeId) AS EmployeeCount FROM Employee;"})
+# %%
+def generate_answer(state: State):
+    """Answer question using retrieved information as context."""
+    prompt = (
+        "Given the following user question, corresponding SQL query, "
+        "and SQL result, answer the user question.\n\n"
+        f'Question: {state["question"]}\n'
+        f'SQL Query: {state["query"]}\n'
+        f'SQL Result: {state["result"]}'
+    )
+    response = llm.invoke(prompt)
+    return {"answer": response.content}
+# %%
+from langgraph.graph import START,END, StateGraph
+
+#graph_builder = StateGraph(State).add_sequence(
+#    [write_query, execute_query, generate_answer]
+#)
+#graph_builder.add_edge(START, "write_query")
+#graph = graph_builder.compile()
+
+graph_builder = StateGraph(State)
+graph_builder.add_node("write_query", write_query)
+graph_builder.add_node("execute_query", execute_query)
+graph_builder.add_node("generate_answer", generate_answer)
+
+graph_builder.add_edge(START, "write_query")
+graph_builder.add_edge("write_query", "execute_query")
+graph_builder.add_edge("execute_query", "generate_answer")
+graph_builder.add_edge("generate_answer", END)
+graph = graph_builder.compile()
+# %%
+from IPython.display import Image, display
+
+display(Image(graph.get_graph().draw_mermaid_png()))
+# %%
+for step in graph.stream(
+    {"question": "How many employees are there?"}, stream_mode="updates"
+):
+    print(step)
+# %%
