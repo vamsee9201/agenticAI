@@ -105,7 +105,7 @@ from IPython.display import Image, display
 display(Image(graph.get_graph().draw_mermaid_png()))
 # %%
 for step in graph.stream(
-    {"question": "How many employees are there?"}, stream_mode="updates"
+    {"question": "List the top 5 customers who spent the most money , also list their names"}, stream_mode="updates"
 ):
     print(step)
 # %%
